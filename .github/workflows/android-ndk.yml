@@ -5,6 +5,18 @@ on:
     paths:
       - 'native/**'
       - 'tools/build-android.py'
+      - 'tools/build.py'
+      - 'scripts/**'
+      - 'webroot/**'
+      - 'branding/**'
+      - 'config/**'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'module.prop'
+      - 'customize.sh'
+      - 'action.sh'
+      - 'service.sh'
+      - 'uninstall.sh'
       - '.github/workflows/android-ndk.yml'
 jobs:
   android:
