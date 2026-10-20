@@ -1,0 +1,83 @@
+/* AY Zygisk V3.0.0 — black & gold skin for the existing responsive WebUI.
+   All original controls and runtime interfaces remain owned by the app. */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"],
+:root[data-theme="amoled"] {
+  color-scheme: dark;
+  --color-onx-bg: #0d0b08;
+  --color-onx-surface: #16120d;
+  --color-onx-container: #211a11;
+  --color-onx-container-high: #302516;
+  --color-onx-on: #f7e9c6;
+  --color-onx-muted: #b6a785;
+  --color-onx-disabled: #766b58;
+  --color-onx-divider: #47351a;
+  --color-onx-accent: #eac16e;
+  --color-onx-on-accent: #171009;
+  --color-onx-scrim: #050403c7;
+  --color-onx-hairline-strong: #dbad5055;
+}
+
+:root[data-theme="light"] {
+  --color-onx-bg: #17130e;
+  --color-onx-surface: #211a12;
+  --color-onx-container: #2a2117;
+  --color-onx-container-high: #382b1b;
+}
+
+:root[data-theme="amoled"] {
+  --color-onx-bg: #000;
+  --color-onx-surface: #080704;
+  --color-onx-container: #141006;
+  --color-onx-container-high: #1e170b;
+}
+
+html, body { background: var(--color-onx-bg); }
+body { margin: 0; }
+
+#ay-v3-brand {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 11px max(18px, env(safe-area-inset-right, 0px));
+  border-bottom: 1px solid #b2863640;
+  background: linear-gradient(110deg, #080807 0%, #1d170e 58%, #100e0a 100%);
+  box-shadow: 0 4px 22px #0005;
+  color: #fbe4af;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: .02em;
+}
+
+.ay-v3-identity { display: flex; align-items: center; gap: 11px; }
+.ay-v3-emblem {
+  display: grid;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  border: 1px solid #e3b55d;
+  border-radius: 10px;
+  background: radial-gradient(circle at 30% 20%, #5e4219, #161007 75%);
+  color: #f9d48a;
+  font-weight: 900;
+  font-size: 17px;
+}
+
+.ay-v3-name { font-size: 15px; line-height: 1.15; font-weight: 800; }
+.ay-v3-edition { color: #d4a950; font-size: 10px; font-weight: 650; letter-spacing: .17em; margin-top: 3px; }
+.ay-v3-credit { text-align: right; font-size: 11px; color: #c4b28c; line-height: 1.25; }
+.ay-v3-credit strong { display: block; color: #f1cc83; font-size: 13px; margin-top: 2px; }
+
+#app :focus-visible { outline: 2px solid #f4cf83; outline-offset: 2px; }
+#app button, #app a { -webkit-tap-highlight-color: #d7a94e33; }
+
+@media (max-width: 440px) {
+  #ay-v3-brand { padding: 9px 14px; gap: 6px 12px; }
+  .ay-v3-name { font-size: 14px; }
+  .ay-v3-credit { font-size: 9px; }
+  .ay-v3-credit strong { font-size: 11px; }
+  .ay-v3-emblem { width: 30px; height: 30px; }
+}
