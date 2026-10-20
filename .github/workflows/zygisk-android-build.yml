@@ -32,10 +32,12 @@ jobs:
         run: python3 tools/build.py --with-zygisk
       - name: Verify archive integrity
         run: |
-          unzip -t ../AY-Zygisk-API-Bridge-v0.4.0-alpha.zip
-          unzip -l ../AY-Zygisk-API-Bridge-v0.4.0-alpha.zip | grep 'zygisk/arm64-v8a.so'
+          unzip -t ../AY-Zygisk-V2-Controller-2.0.0.zip
+          unzip -l ../AY-Zygisk-V2-Controller-2.0.0.zip | grep 'zygisk/arm64-v8a.so'
+      - name: Stage ZIP inside workspace for artifact upload
+        run: cp ../AY-Zygisk-V2-Controller-2.0.0.zip AY-Zygisk-V2-Controller-2.0.0.zip
       - uses: actions/upload-artifact@v4
         with:
           name: AY-Zygisk-0.4.0-NDK-UNTESTED
-          path: ../AY-Zygisk-API-Bridge-v0.4.0-alpha.zip
+          path: AY-Zygisk-V2-Controller-2.0.0.zip
           retention-days: 7
