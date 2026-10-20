@@ -30,7 +30,7 @@ bridge. None of these loads code into Android Zygote. The status key
 
 ## Current status
 
-- **M1:** In progress; GitHub Actions and host tests are the immediate evidence.
+- **M1:** Host test and four-ABI NDK build pipelines pass; physical-device installation and boot behavior remain unverified.
 - **M2–M5:** Not complete. Do not publish a standalone-engine release.
 
 ### M2 control-plane foundation (source implemented, host-tested)
@@ -41,8 +41,12 @@ bridge. None of these loads code into Android Zygote. The status key
   command types; unit tests exercise malformed headers and 100,000 random frames.
 - A read-only, descriptor-relative inventory scanner rejects symlinks, disabled
   modules, unexpected ELF classes and ABI mismatches; it never executes a module.
+- `native/engine/recovery.*` implements an original persistent crash-loop guard using
+  a process lock, atomic journal replacement, durability sync and fail-closed
+  corruption and symlink checks. Host tests cover three unclean starts, operator
+  reset and on-disk state errors. It is not yet wired to an Android root daemon.
 - No socket is listening, no root privileges are used, and there is no Zygote
-  attachment. Peer authentication and persistent crash tracking remain required.
+  attachment. Peer authentication and device-verified recovery remain required.
 
 The bridge in `native/zygisk` is a plugin that requires an external backend.
 It cannot serve as the standalone loader. The host harness uses an AY-specific
