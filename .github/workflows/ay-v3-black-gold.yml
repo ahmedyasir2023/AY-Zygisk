@@ -1,0 +1,62 @@
+name: AY Zygisk V3.0.0 — Black & Gold
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/ay-zygisk-v3-black-gold
+    paths:
+      - 'tools/pack-ay-v3.py'
+      - 'tests/test-ay-v3.py'
+      - 'branding/ay-zygisk-banner.svg'
+      - 'webroot/assets/ay-v3.css'
+      - '.github/workflows/ay-v3-black-gold.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-and-package:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Obtain verified runtime release
+        run: |
+          curl --fail --location --retry 3 --output upstream.zip \
+            https://github.com/OnyxZygisk/OnyxZygisk/releases/download/v1.09/OnyxZygisk-v1.09-399-820b68b-release.zip
+          echo '76fc0ed44186a628d3816a2830320e234ed62e1aa962be99bc1bf224f5505de7  upstream.zip' | sha256sum -c -
+
+      - name: Keep complete source and licensing notices
+        run: |
+          curl --fail --location --retry 3 --output upstream-LICENSE \
+            https://raw.githubusercontent.com/OnyxZygisk/OnyxZygisk/820b68b31527c41d5decf4a47765167ebe795dc8/LICENSE
+          curl --fail --location --retry 3 --output upstream-NOTICE.md \
+            https://raw.githubusercontent.com/OnyxZygisk/OnyxZygisk/820b68b31527c41d5decf4a47765167ebe795dc8/NOTICE.md
+
+      - name: Render AY V3 banner
+        run: |
+          python3 -m pip install --user 'CairoSVG==2.7.1'
+          python3 -c "import cairosvg; cairosvg.svg2png(url='branding/ay-zygisk-banner.svg', write_to='ay-v3-banner.png', output_width=1400)"
+
+      - name: Create V3 installer
+        run: |
+          python3 tools/pack-ay-v3.py \
+            --upstream upstream.zip \
+            --license upstream-LICENSE \
+            --notice upstream-NOTICE.md \
+            --banner-png ay-v3-banner.png \
+            --skin-css webroot/assets/ay-v3.css \
+            --output AY-Zygisk-V3.0.0-BlackGold.zip
+
+      - name: Validate archive and native compatibility
+        run: |
+          unzip -tq AY-Zygisk-V3.0.0-BlackGold.zip
+          python3 tests/test-ay-v3.py upstream.zip AY-Zygisk-V3.0.0-BlackGold.zip
+          sha256sum AY-Zygisk-V3.0.0-BlackGold.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AY-Zygisk-V3.0.0-BlackGold
+          path: AY-Zygisk-V3.0.0-BlackGold.zip
+          if-no-files-found: error
