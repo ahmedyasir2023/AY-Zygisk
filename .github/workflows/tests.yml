@@ -20,4 +20,5 @@ jobs:
       - name: Build and audit ZIP
         run: |
           python3 tools/build.py
-          unzip -t ../AY-Zygisk-Runtime-v0.3.0-alpha.zip
+          unzip -t ../AY-Zygisk-V2-Controller-2.0.0.zip
+          python3 tests/test-package.py ../AY-Zygisk-V2-Controller-2.0.0.zip

@@ -2,7 +2,7 @@
 
 **Developer:** Eng. Ahmed Yasir  
 **Module ID:** `ayzygisk`  
-**Release:** `2.0.0`  
+**Release:** `2.0.0` (controller-only; native engine pending)  
 **Type:** Independent control/diagnostic module (not a standalone Zygisk engine)
 
 ## Installation
@@ -40,6 +40,7 @@ python3 tools/build.py
 sh tests/test-controller.sh
 node --check webroot/assets/app.js
 python3 native/zygisk/tests/test_bridge.py
+python3 tests/test-package.py ../AY-Zygisk-V2-Controller-2.0.0.zip
 # Optional host lab (Linux):
 cmake -S native -B /tmp/ay-v2-native -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build /tmp/ay-v2-native --parallel 2

@@ -15,15 +15,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup Android SDK + NDK
         uses: android-actions/setup-android@v3
-      - run: sdkmanager --install "ndk;30.0.16248370"
+      - run: sdkmanager --install "ndk;27.2.12479018"
       - name: Compile static Android preflight for 4 ABIs
         run: python3 tools/build-android.py --ndk "$ANDROID_HOME/ndk/30.0.16248370"
       - name: Package install ZIP
         run: python3 tools/build.py
       - uses: actions/upload-artifact@v4
         with:
-          name: ay-zygisk-v0.3-ndk-readonly-build
+          name: ay-zygisk-v2-ndk-readonly-build
           path: |
             bin/*/ay-native
-            ../AY-Zygisk-Runtime-v0.3.0-alpha.zip
+            ../AY-Zygisk-V2-Controller-2.0.0.zip
           if-no-files-found: error
