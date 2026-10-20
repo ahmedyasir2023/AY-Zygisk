@@ -2,7 +2,7 @@
 #include "../core.hpp"
 
 #include <array>
-#include <cassert>
+#include <cstdlib>
 #include <cstdint>
 #include <iostream>
 #include <random>
@@ -18,84 +18,92 @@ using ay::engine::encode_header;
 using ay::engine::kFrameHeaderSize;
 using ay::engine::kMaxPayloadSize;
 
+static void check(bool result, const char* expression, int line) {
+    if (!result) {
+        std::cerr << "FAIL line " << line << ": " << expression << "\n";
+        std::abort();
+    }
+}
+#define CHECK(expression) check(static_cast<bool>(expression), #expression, __LINE__)
+
 static void verify_controller() {
     Controller c(2);
-    assert(c.snapshot().state == State::Dormant);
-    assert(!c.transition(Event::BackendAttached));
-    assert(!c.snapshot().backend_active);
+    CHECK(c.snapshot().state == State::Dormant);
+    CHECK(!c.transition(Event::BackendAttached));
+    CHECK(!c.snapshot().backend_active);
 
-    assert(c.transition(Event::BeginPreflight));
-    assert(!c.transition(Event::BackendAttached));
-    assert(c.transition(Event::PreflightPassed));
-    assert(c.transition(Event::BackendAttached));
-    assert(c.snapshot().backend_active);
-    assert(c.transition(Event::BackendLost));
-    assert(c.snapshot().state == State::Degraded);
-    assert(c.snapshot().consecutive_failures == 1);
-    assert(!c.snapshot().backend_active);
+    CHECK(c.transition(Event::BeginPreflight));
+    CHECK(!c.transition(Event::BackendAttached));
+    CHECK(c.transition(Event::PreflightPassed));
+    CHECK(c.transition(Event::BackendAttached));
+    CHECK(c.snapshot().backend_active);
+    CHECK(c.transition(Event::BackendLost));
+    CHECK(c.snapshot().state == State::Degraded);
+    CHECK(c.snapshot().consecutive_failures == 1);
+    CHECK(!c.snapshot().backend_active);
 
-    assert(c.transition(Event::BeginPreflight));
-    assert(c.transition(Event::PreflightFailed));
-    assert(c.snapshot().state == State::Disabled);
-    assert(c.snapshot().consecutive_failures == 2);
-    assert(!c.transition(Event::BeginPreflight));
-    assert(!c.transition(Event::Stop));  // No silent reset of a disabled engine.
-    assert(c.transition(Event::ResetByOperator));
-    assert(c.snapshot().state == State::Dormant);
-    assert(c.snapshot().consecutive_failures == 0);
+    CHECK(c.transition(Event::BeginPreflight));
+    CHECK(c.transition(Event::PreflightFailed));
+    CHECK(c.snapshot().state == State::Disabled);
+    CHECK(c.snapshot().consecutive_failures == 2);
+    CHECK(!c.transition(Event::BeginPreflight));
+    CHECK(!c.transition(Event::Stop));  // No silent reset of a disabled engine.
+    CHECK(c.transition(Event::ResetByOperator));
+    CHECK(c.snapshot().state == State::Dormant);
+    CHECK(c.snapshot().consecutive_failures == 0);
 
-    assert(c.transition(Event::BeginPreflight));
-    assert(c.transition(Event::PreflightPassed));
-    assert(c.transition(Event::BackendAttached));
-    assert(c.transition(Event::BackendHealthy));
-    assert(c.snapshot().consecutive_failures == 0);
-    assert(c.transition(Event::Stop));
-    assert(c.snapshot().state == State::Dormant);
-    assert(!c.snapshot().backend_active);
+    CHECK(c.transition(Event::BeginPreflight));
+    CHECK(c.transition(Event::PreflightPassed));
+    CHECK(c.transition(Event::BackendAttached));
+    CHECK(c.transition(Event::BackendHealthy));
+    CHECK(c.snapshot().consecutive_failures == 0);
+    CHECK(c.transition(Event::Stop));
+    CHECK(c.snapshot().state == State::Dormant);
+    CHECK(!c.snapshot().backend_active);
 
     // A zero error budget is disallowed; clamp to one failure.
     Controller strict(0);
-    assert(strict.transition(Event::BeginPreflight));
-    assert(strict.transition(Event::PreflightFailed));
-    assert(strict.snapshot().state == State::Disabled);
+    CHECK(strict.transition(Event::BeginPreflight));
+    CHECK(strict.transition(Event::PreflightFailed));
+    CHECK(strict.snapshot().state == State::Disabled);
 }
 
 static void verify_protocol() {
     FrameBytes bytes{};
     FrameHeader header{MessageKind::Hello, 0};
-    assert(encode_header(header, &bytes));
-    assert(bytes[0] == 'A' && bytes[1] == 'Y' && bytes[2] == 'Z');
-    assert(bytes[4] == 1 && bytes[5] == 1);
+    CHECK(encode_header(header, &bytes));
+    CHECK(bytes[0] == 'A' && bytes[1] == 'Y' && bytes[2] == 'Z');
+    CHECK(bytes[4] == 1 && bytes[5] == 1);
     FrameHeader decoded{MessageKind::Shutdown, 99};
-    assert(decode_header(bytes.data(), bytes.size(), &decoded));
-    assert(decoded.kind == MessageKind::Hello);
-    assert(decoded.payload_length == 0);
+    CHECK(decode_header(bytes.data(), bytes.size(), &decoded));
+    CHECK(decoded.kind == MessageKind::Hello);
+    CHECK(decoded.payload_length == 0);
 
     header = {MessageKind::Inventory, kMaxPayloadSize};
-    assert(encode_header(header, &bytes));
-    assert(decode_header(bytes.data(), bytes.size(), &decoded));
-    assert(decoded.payload_length == kMaxPayloadSize);
-    assert(!encode_header({MessageKind::Inventory, kMaxPayloadSize + 1}, &bytes));
-    assert(!encode_header({MessageKind::Hello, 1}, &bytes));
-    assert(!encode_header({static_cast<MessageKind>(255), 0}, &bytes));
-    assert(!encode_header(header, nullptr));
-    assert(!decode_header(nullptr, kFrameHeaderSize, &decoded));
-    assert(!decode_header(bytes.data(), kFrameHeaderSize - 1, &decoded));
-    assert(!decode_header(bytes.data(), bytes.size(), nullptr));
+    CHECK(encode_header(header, &bytes));
+    CHECK(decode_header(bytes.data(), bytes.size(), &decoded));
+    CHECK(decoded.payload_length == kMaxPayloadSize);
+    CHECK(!encode_header({MessageKind::Inventory, kMaxPayloadSize + 1}, &bytes));
+    CHECK(!encode_header({MessageKind::Hello, 1}, &bytes));
+    CHECK(!encode_header({static_cast<MessageKind>(255), 0}, &bytes));
+    CHECK(!encode_header(header, nullptr));
+    CHECK(!decode_header(nullptr, kFrameHeaderSize, &decoded));
+    CHECK(!decode_header(bytes.data(), kFrameHeaderSize - 1, &decoded));
+    CHECK(!decode_header(bytes.data(), bytes.size(), nullptr));
 
     auto corrupted = bytes;
     corrupted[0] = 'Q';
-    assert(!decode_header(corrupted.data(), corrupted.size(), &decoded));
+    CHECK(!decode_header(corrupted.data(), corrupted.size(), &decoded));
     corrupted = bytes;
     corrupted[4] = 2;
-    assert(!decode_header(corrupted.data(), corrupted.size(), &decoded));
+    CHECK(!decode_header(corrupted.data(), corrupted.size(), &decoded));
     corrupted = bytes;
     corrupted[7] = 1;
-    assert(!decode_header(corrupted.data(), corrupted.size(), &decoded));
+    CHECK(!decode_header(corrupted.data(), corrupted.size(), &decoded));
     corrupted = bytes;
     corrupted[8] = 0xff;
     corrupted[9] = 0xff;
-    assert(!decode_header(corrupted.data(), corrupted.size(), &decoded));
+    CHECK(!decode_header(corrupted.data(), corrupted.size(), &decoded));
 
     // Fuzz protocol decoding with arbitrary 12-byte frames. It must never
     // access outside the buffer or return non-enumerated message kinds.
@@ -106,8 +114,8 @@ static void verify_protocol() {
         FrameHeader candidate{MessageKind::Hello, 0};
         if (decode_header(noise.data(), noise.size(), &candidate)) {
             FrameBytes round_trip{};
-            assert(encode_header(candidate, &round_trip));
-            assert(round_trip == noise);
+            CHECK(encode_header(candidate, &round_trip));
+            CHECK(round_trip == noise);
         }
     }
 }
