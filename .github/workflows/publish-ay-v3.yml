@@ -44,6 +44,7 @@ jobs:
             --notice upstream-NOTICE.md \
             --banner-png AY-Zygisk-V3-Banner.png \
             --skin-css webroot/assets/ay-v3.css \
+            --arabic-xml webroot/locales/strings/ar.xml \
             --output AY-Zygisk-V3.0.0-BlackGold.zip
           python3 tests/test-ay-v3.py upstream.zip AY-Zygisk-V3.0.0-BlackGold.zip
           unzip -tq AY-Zygisk-V3.0.0-BlackGold.zip

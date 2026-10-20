@@ -15,6 +15,7 @@ import re
 import sys
 from copy import copy
 from pathlib import Path, PurePosixPath
+from xml.etree import ElementTree
 from zipfile import ZIP_DEFLATED, ZipFile
 
 
@@ -83,17 +84,20 @@ def new_webui_html(content: bytes) -> bytes:
         b'\t\t<link rel="stylesheet" href="./assets/ay-v3.css" />\n\t</head>',
         "webroot/index.html",
     )
+    # The installer banner is now an actual WebUI image as well. Keep designer
+    # credit in HTML so it is readable on narrow phone screens, not just in PNG.
     banner = (
-        b'<header id="ay-v3-brand" aria-label="AY Zygisk designer and version">'
-        b'<div class="ay-v3-identity"><span class="ay-v3-emblem" aria-hidden="true">AY</span>'
-        b'<div><div class="ay-v3-name">AY Zygisk <span>V3.0.0</span></div>'
-        b'<div class="ay-v3-edition">BLACK &amp; GOLD EDITION</div></div></div>'
-        b'<div class="ay-v3-credit">DESIGNED BY<strong>Eng. Ahmed Yasir</strong></div></header>'
+        b'<header id="ay-v3-brand" aria-label="AY Zygisk Black and Gold banner">'
+        b'<img class="ay-v3-banner" src="./assets/ay-v3-banner.png" '
+        b'alt="AY Zygisk V3.0.0 Black and Gold Edition - Designed by Eng. Ahmed Yasir" />'
+        b'<div class="ay-v3-ribbon"><span class="ay-v3-mark">AY <b>ZYGISK</b></span>'
+        b'<span class="ay-v3-credit">DESIGNED BY <strong>Eng. Ahmed Yasir</strong></span>'
+        b'</div></header>'
     )
     return checked_replace(content, b'<div id="app"></div>', banner + b'\n\t\t<div id="app"></div>', "webroot/index.html")
 
 
-def build_replacements(source: ZipFile, banner_png: bytes, skin_css: bytes) -> dict[str, bytes]:
+def build_replacements(source: ZipFile, banner_png: bytes, skin_css: bytes, arabic_xml: bytes) -> dict[str, bytes]:
     names = set(source.namelist())
     props = (
         "id=onyxzygisk\n"  # Native compatibility; do not change without recompilation.
@@ -108,6 +112,19 @@ def build_replacements(source: ZipFile, banner_png: bytes, skin_css: bytes) -> d
         "banner.png": banner_png,
         "webroot/index.html": new_webui_html(source.read("webroot/index.html")),
     }
+    english_root = ElementTree.fromstring(source.read("webroot/locales/strings/en.xml"))
+    arabic_root = ElementTree.fromstring(arabic_xml)
+    english_keys = {node.get("name") for node in english_root.findall("string")}
+    arabic_keys = {node.get("name") for node in arabic_root.findall("string")}
+    # The single added key labels the private runtime path honestly without
+    # displaying a legacy compatibility identifier.
+    if arabic_keys != english_keys | {"status_workdir_private"}:
+        raise ValueError(f"Arabic locale keys differ: missing={sorted(english_keys - arabic_keys)}; extra={sorted(arabic_keys - english_keys - {'status_workdir_private'})}")
+    languages = json.loads(source.read("webroot/locales/languages.json"))
+    if "ar" in languages:
+        raise ValueError("Arabic is already present in the pinned upstream locale list")
+    languages["ar"] = "العربية"
+    updates["webroot/locales/languages.json"] = (json.dumps(languages, indent=4, ensure_ascii=False) + "\n").encode("utf-8")
     config = json.loads(source.read("webroot/config.json"))
     config["title"] = "AY Zygisk V3.0.0"
     updates["webroot/config.json"] = (json.dumps(config, indent=4, ensure_ascii=False) + "\n").encode()
@@ -116,11 +133,26 @@ def build_replacements(source: ZipFile, banner_png: bytes, skin_css: bytes) -> d
             js = source.read(name)
             js = checked_replace(js, b"OnyxZygisk", b"AY Zygisk", name)
             js = checked_replace(js, b"le=[`Sai`,`Matsuzaka Yuki`]", b"le=[`Eng. Ahmed Yasir`]", name)
+            # The actual location remains owned by the native runtime. The
+            # status card is a display-only label, not a file-system action.
+            js = checked_replace(
+                js,
+                b"children:t?.keys.workdir||c",
+                b"children:N(`status_workdir_private`,`Managed internally`)",
+                name,
+            )
             updates[name] = js
         elif name.startswith("webroot/locales/strings/") and name.endswith(".xml"):
             xml = source.read(name)
             # Localized caption; visible author list in the WebUI is rebranded.
             xml = re.sub(rb'(<string name="settings_authors">).*?(</string>)', rb'\1Designer\2', xml)
+            if name.endswith("en.xml"):
+                xml = checked_replace(
+                    xml,
+                    b"</resources>",
+                    b'\t<string name="status_workdir_private">Managed internally</string>\n</resources>',
+                    name,
+                )
             updates[name] = xml
         elif name in {"action.sh", "customize.sh", "service.sh", "zygisk-init.sh", "post-fs-data.sh", "late-load.sh", "uninstall.sh"}:
             script = source.read(name)
@@ -143,6 +175,9 @@ def readme() -> bytes:
         "## Highlights\n\n"
         "- Refreshed responsive black-and-gold dashboard and accessibility focus states.\n"
         "- Visible AY Zygisk V3.0.0 header with prominent designer credit.\n"
+        "- In-app premium banner with a compact mobile credit ribbon.\n"
+        "- Full Arabic translation and automatic right-to-left interface layout.\n"
+        "- Private work directory is described without exposing legacy runtime IDs.\n"
         "- Runtime/daemon, Zygote, installed modules and logs views kept functional.\n"
         "- Verified module payload checksums and unchanged architecture-specific ELFs.\n\n"
         "## Installation and recovery\n\n"
@@ -166,6 +201,7 @@ def main() -> None:
     parser.add_argument("--notice", required=True, type=Path)
     parser.add_argument("--banner-png", required=True, type=Path)
     parser.add_argument("--skin-css", required=True, type=Path)
+    parser.add_argument("--arabic-xml", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
     if args.upstream.resolve() == args.output.resolve():
@@ -182,14 +218,19 @@ def main() -> None:
     if banner_png[:8] != b"\x89PNG\r\n\x1a\n":
         raise ValueError("Banner must be PNG")
     skin_css = args.skin_css.read_bytes()
+    arabic_xml = args.arabic_xml.read_bytes()
     with ZipFile(args.upstream) as original:
         validate_archive(original)
-        updates = build_replacements(original, banner_png, skin_css)
+        updates = build_replacements(original, banner_png, skin_css, arabic_xml)
         updates["README.md"] = readme()
         original_names = set(original.namelist())
         extras = {
             "webroot/assets/ay-v3.css": skin_css,
             "webroot/assets/ay-v3.css.sha256": sha256(skin_css).encode("ascii"),
+            "webroot/assets/ay-v3-banner.png": banner_png,
+            "webroot/assets/ay-v3-banner.png.sha256": sha256(banner_png).encode("ascii"),
+            "webroot/locales/strings/ar.xml": arabic_xml,
+            "webroot/locales/strings/ar.xml.sha256": sha256(arabic_xml).encode("ascii"),
             "LICENSE": license_text,
             "NOTICE.md": notice_text + (
                 "\n## Complete corresponding source\n\n"
@@ -214,6 +255,8 @@ def main() -> None:
             validate_archive(final)
             assert final.read("module.prop") == updates["module.prop"]
             assert final.read("webroot/assets/ay-v3.css") == skin_css
+            assert final.read("webroot/assets/ay-v3-banner.png") == banner_png
+            assert final.read("webroot/locales/strings/ar.xml") == arabic_xml
             for abi in ABIS:
                 for name in (f"bin/{abi}/zygiskd", f"lib/{abi}/libzygisk.so", f"lib/{abi}/libzygisk_ptrace.so"):
                     if final.read(name) != original.read(name):

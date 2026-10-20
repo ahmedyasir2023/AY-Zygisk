@@ -5,11 +5,13 @@ on:
   push:
     branches:
       - feat/ay-zygisk-v3-black-gold
+      - fix/ay-v3-webui-arabic-banner
     paths:
       - 'tools/pack-ay-v3.py'
       - 'tests/test-ay-v3.py'
       - 'branding/ay-zygisk-banner.svg'
       - 'webroot/assets/ay-v3.css'
+      - 'webroot/locales/strings/ar.xml'
       - '.github/workflows/ay-v3-black-gold.yml'
 
 permissions:
@@ -47,6 +49,7 @@ jobs:
             --notice upstream-NOTICE.md \
             --banner-png ay-v3-banner.png \
             --skin-css webroot/assets/ay-v3.css \
+            --arabic-xml webroot/locales/strings/ar.xml \
             --output AY-Zygisk-V3.0.0-BlackGold.zip
 
       - name: Validate archive and native compatibility
