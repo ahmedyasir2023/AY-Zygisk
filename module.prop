@@ -1,0 +1,8 @@
+id=ayzygisk
+name=AY Zygisk V2
+version=2.0.0
+versionCode=20000
+author=Eng. Ahmed Yasir
+description=AY Zygisk V2 Black & Gold: independent root-module compatibility console, read-only Native/ELF inspection, integrity guard, readiness doctor, crash-safe host lab and bilingual WebUI. Not a standalone Zygote/Zygisk engine.
+webuiIcon=webroot/assets/mark.svg
+actionIcon=webroot/assets/mark.svg

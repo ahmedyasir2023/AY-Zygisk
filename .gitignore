@@ -1,0 +1,12 @@
+# Local build outputs. Android artifacts must be produced by CI or a trusted NDK.
+/build/
+/bin/
+/zygisk/
+*.o
+*.so
+*.pyc
+__pycache__/
+/native/zygisk/vendor/
+
+# Optional generated branding previews.
+/branding/*-V2-*.png

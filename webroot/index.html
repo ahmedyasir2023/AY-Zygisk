@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="#090a0d"/>
+  <meta name="description" content="AY Zygisk — Independent Control Center by Eng. Ahmed Yasir"/>
+  <title>AY Zygisk | Black & Gold</title>
+  <link rel="icon" type="image/svg+xml" href="assets/mark.svg"/>
+  <link rel="stylesheet" href="assets/app.css"/>
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M36 3 13 35h17l-4 26 27-36H35z" fill="currentColor"/></svg></div><div class="brand-copy"><b>AY <em>ZYGISK</em></b><small>V2 BLACK & GOLD <span class="brand-dot">●</span> 2.0.0</small></div></div>
+      <div class="head-actions"><button class="ghost lang" id="language" aria-label="Change language">EN</button><button class="ghost refresh" id="refresh" aria-label="Refresh status"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M5.9 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12-3"/></svg></button></div>
+    </header>
+    <main>
+      <section class="hero"><div class="hero-ambient"></div><div class="hero-content"><div class="eyebrow"><span class="accent-line"></span><span data-t="eyebrow">الجيل الجديد من إدارة Zygisk</span></div><h1>POWER. <span>PRECISION.</span><br/>CONTROL.</h1><p data-t="heroDesc">مركز تحكم مستقل لتشخيص Zygisk ومراقبة توافق الموديولات، بهوية AY السوداء والذهبية.</p><div class="hero-chips"><span class="chip"><span class="pulse"></span><span id="connectionText" data-t="checking">جارِ التحقق من الاتصال</span></span><span class="chip quiet" data-t="rootTools">Magisk · KernelSU · APatch</span></div></div><div class="hero-art"><svg viewBox="0 0 240 280" aria-hidden="true"><defs><linearGradient id="heroMetal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff1bc"/><stop offset=".42" stop-color="#d7a642"/><stop offset=".75" stop-color="#815a19"/><stop offset="1" stop-color="#f0c66b"/></linearGradient><filter id="heroGlow"><feGaussianBlur stdDeviation="12"/></filter></defs><circle cx="122" cy="137" r="92" fill="none" stroke="#bd8d35" opacity=".16" stroke-width="1"/><circle cx="122" cy="137" r="114" fill="none" stroke="#bd8d35" opacity=".10" stroke-width="1"/><path d="M142 22 58 150h66l-15 108 85-141h-65z" fill="#ac7a29" opacity=".45" filter="url(#heroGlow)"/><path d="M142 22 58 150h66l-15 108 85-141h-65z" fill="url(#heroMetal)"/><path d="M139 37 76 141h56L118 230l65-104h-64z" fill="none" stroke="#fff3cb" stroke-width="1" opacity=".55"/></svg></div></section>
+      <div class="minihead"><span data-t="overview">نظرة عامة</span><span id="timeLabel">—</span></div>
+      <section class="metrics" id="metrics"><article class="metric"><span data-t="manager">مدير الروت</span><strong id="managerValue">—</strong><small data-t="detected">يُكتشف تلقائيًا</small><i class="metric-icon">◆</i></article><article class="metric"><span data-t="zygiskBackend">محرك Zygisk المكتشف</span><strong id="engineValue">—</strong><small data-t="backendHint">كشف تثبيت، وليس إثبات تشغيل</small><i class="metric-icon">ϟ</i></article><article class="metric"><span data-t="androidVersion">إصدار أندرويد</span><strong id="androidValue">—</strong><small id="abiValue">—</small><i class="metric-icon">◈</i></article><article class="metric"><span data-t="availableMemory">الذاكرة المتاحة</span><strong id="memoryValue">—</strong><small id="uptimeValue">—</small><i class="metric-icon">▥</i></article></section>
+      <nav class="tabs" aria-label="Main navigation"><button class="tab active" data-page="dashboard" data-t="dashboard">لوحة التحكم</button><button class="tab" data-page="modules" data-t="modules">الموديولات</button><button class="tab" data-page="diagnostics" data-t="diagnostics">التشخيص</button><button class="tab" data-page="native" data-t="nativeLab">مختبر Native</button><button class="tab" data-page="runtime" data-t="runtimeLab">مختبر Runtime</button><button class="tab" data-page="bridge" data-t="bridgeLab">واجهة Zygisk API</button><button class="tab" data-page="doctor" data-t="v2Doctor">فحص V2</button><button class="tab" data-page="settings" data-t="settings">الإعدادات</button></nav>
+      <section class="page active" id="page-dashboard"><div class="two-col"><article class="panel"><div class="panel-title"><div><span class="micro" data-t="system">SYSTEM STATUS</span><h2 data-t="healthMonitor">مراقبة صحة النظام</h2></div><div class="panel-emblem">✦</div></div><div class="health"><div class="ring"><div class="ring-inside"><span id="healthScore">—</span><small data-t="healthLabel">حالة المراقبة</small></div></div><div class="health-copy"><h3 id="healthTitle" data-t="loading">جارِ تحميل البيانات...</h3><p id="healthDesc" data-t="healthDesc">التشخيص يراقب حالة الموديولات فقط، ولا يغيّر محرك Zygisk.</p><button class="btn-outline" id="runScan" data-t="scanNow">فحص الموديولات الآن ↗</button></div></div></article><article class="panel"><div class="panel-title"><div><span class="micro" data-t="activity">ACTIVITY</span><h2 data-t="quickActions">إجراءات سريعة</h2></div><div class="panel-emblem">⌘</div></div><div class="action-list"><button id="generateReport" class="action-row"><span class="action-ico">◎</span><span class="action-text"><b data-t="generateReport">إنشاء تقرير تشخيص</b><small data-t="reportSubtitle">احفظ ملخصًا عن الجهاز والموديولات</small></span><span>↗</span></button><button id="viewModules" class="action-row"><span class="action-ico">▦</span><span class="action-text"><b data-t="moduleInspector">فاحص الموديولات</b><small data-t="moduleSubtitle">استعراض الإضافات وحالات التشغيل</small></span><span>↗</span></button><button id="openSettings" class="action-row"><span class="action-ico">⚙</span><span class="action-text"><b data-t="configMonitor">إعدادات المراقبة</b><small data-t="configSubtitle">التحكم في تسجيل الأحداث والفحص</small></span><span>↗</span></button></div></article></div><div class="note"><strong data-t="important">مهم</strong><p data-t="noEngine">هذه نسخة تحكم وتشخيص مستقلة. لا تحتوي بعد على محرك Native لحقن Zygote ولا تتجاوز فحوصات أمان التطبيقات.</p></div></section>
+      <section class="page" id="page-modules"><article class="panel"><div class="panel-title"><div><span class="micro">COMPATIBILITY INTELLIGENCE</span><h2 data-t="installedModules">الموديولات المثبتة</h2></div><button class="btn-outline" id="refreshModules" data-t="rescan">إعادة الفحص</button></div><p class="section-desc" data-t="modulesDesc">فحص للقراءة فقط. لن يتم تفعيل أو تعطيل أي موديول آخر.</p><div id="warnings"></div><div class="module-list" id="moduleList"><div class="empty" data-t="loading">جارِ تحميل البيانات...</div></div><div class="statline"><span data-t="modulesFound">الموديولات المكتشفة</span><strong id="moduleCount">0</strong></div></article></section>
+      <section class="page" id="page-diagnostics"><div class="two-col"><article class="panel"><div class="panel-title"><div><span class="micro">DIAGNOSTICS</span><h2 data-t="healthReport">تقرير حالة الجهاز</h2></div><div class="panel-emblem">☷</div></div><p class="section-desc" data-t="reportPrivacy">التقرير لا يجمع قائمة التطبيقات أو كلمات المرور أو سجلات استخدامك.</p><button id="createReport" class="primary full" data-t="createReport">إنشاء التقرير الآن</button><button id="copyReport" class="btn-outline full" data-t="copyReport">نسخ التقرير</button></article><article class="panel"><div class="panel-title"><div><span class="micro">EVENT LOG</span><h2 data-t="eventHistory">سجل الأحداث</h2></div><button class="btn-outline" id="loadLogs" data-t="refreshLogs">تحديث</button></div><pre id="logOutput" class="terminal">No events recorded.</pre></article></div><article class="panel report-panel"><div class="panel-title"><h2 data-t="reportOutput">محتوى التقرير</h2></div><pre id="reportOutput" class="terminal larger">—</pre></article></section>
+      <section class="page" id="page-native">
+        <article class="panel">
+          <div class="panel-title"><div><span class="micro">AY NATIVE PREFLIGHT / READ ONLY</span><h2 data-t="nativeLab">مختبر Native</h2></div><div class="panel-emblem">ϟ</div></div>
+          <p class="section-desc" data-t="nativeDesc">افحص مكتبات إضافات Zygisk ومعمارياتها بشكل آمن ودون تحميلها داخل أي عملية.</p>
+          <div class="native-summary"><span data-t="nativeModeLabel">طريقة الفحص</span><strong id="nativeMode">—</strong></div>
+          <div class="native-summary"><span data-t="nativeStatusLabel">حالة المحرك</span><strong id="nativeState">—</strong></div>
+          <button id="runNative" class="primary full" data-t="nativeRun">ابدأ الفحص الآن</button>
+          <div class="notice" data-t="nativeDisclaimer">هذا فحص تحضيري للملفات وليس محرك Zygote أو إثباتًا لتوافق الموديول عند التشغيل.</div>
+        </article>
+        <article class="panel"><div class="panel-title"><div><span class="micro">STATIC ABI AUDIT</span><h2 data-t="nativeResults">نتائج فحص ELF</h2></div><div class="panel-emblem">◈</div></div>
+          <pre id="nativeOutput" class="terminal larger" aria-live="polite">—</pre>
+        </article>
+      </section>
+      <section class="page" id="page-runtime">
+        <div class="two-col">
+          <article class="panel"><div class="panel-title"><div><span class="micro">AY RUNTIME / STAGE 0.3</span><h2 data-t="runtimeLab">مختبر Runtime</h2></div><div class="panel-emblem">ϟ</div></div>
+            <p class="section-desc" data-t="runtimeDesc">اختبارات جاهزية أندرويد مع مختبر إضافات AY معزول للكمبيوتر فقط.</p>
+            <div class="native-summary"><span>Android Zygote bridge</span><strong id="runtimeEngineState">—</strong></div>
+            <div class="native-summary"><span>Device ABI</span><strong id="runtimeAbi">—</strong></div>
+            <div class="native-summary"><span>Android inspector</span><strong id="runtimeInspector">—</strong></div>
+            <button id="runRuntime" class="primary full" data-t="runtimeRefresh">فحص جاهزية التشغيل</button>
+            <div class="notice" data-t="runtimeHint">اختبارات تحميل إضافات AY التجريبية على الكمبيوتر فقط. لا يتم حقن تطبيقات أندرويد.</div>
+          </article>
+          <article class="panel"><div class="panel-title"><div><span class="micro">RUNTIME CAPABILITY GATES</span><h2 data-t="runtimeDetails">حالة مكونات Runtime</h2></div><div class="panel-emblem">◈</div></div>
+            <pre id="runtimeOutput" class="terminal larger" aria-live="polite">—</pre>
+          </article>
+        </div>
+      </section>
+      <section class="page" id="page-bridge">
+        <div class="two-col">
+          <article class="panel">
+            <div class="panel-title"><div><span class="micro">PUBLIC ZYGISK API / STAGE 0.4</span><h2 data-t="bridgeLab">واجهة Zygisk API</h2></div><div class="panel-emblem">ϟ</div></div>
+            <p class="section-desc" data-t="bridgeDesc">اختبار Native اختياري متوافق مع API v5، دون تعديل التطبيقات أو إخفاء الروت.</p>
+            <div class="native-summary"><span>Build / Packaging</span><strong id="bridgeBuild">—</strong></div>
+            <div class="native-summary"><span>Backend marker</span><strong id="bridgeBackend">—</strong></div>
+            <div class="native-summary"><span>Live callbacks</span><strong id="bridgeCallbacks">—</strong></div>
+            <button id="runBridge" class="primary full" data-t="bridgeRefresh">فحص جسر Zygisk</button>
+            <div class="notice" data-t="bridgeNote">لا يثبت هذا الفحص أن المحرك يعمل داخل Zygote. البناء يتطلب Android NDK والاختبار الفعلي على جهاز.</div>
+          </article>
+          <article class="panel"><div class="panel-title"><div><span class="micro">BRIDGE PREFLIGHT</span><h2 data-t="bridgeDetails">بيانات التوافق</h2></div></div><pre id="bridgeOutput" class="terminal larger" aria-live="polite">—</pre></article>
+        </div>
+      </section>
+      <section class="page" id="page-doctor">
+        <div class="two-col">
+          <article class="panel"><div class="panel-title"><div><span class="micro">AY V2 / CAPABILITY AUDIT</span><h2 data-t="v2Doctor">مركز فحص V2</h2></div><div class="panel-emblem">⚡</div></div>
+            <p class="section-desc" data-t="doctorIntro">فحص واقعي للإمكانيات والاعتماديات، مع توضيح المزايا غير المتاحة بدلًا من نتائج نجاح وهمية.</p>
+            <button class="primary full" id="runDoctor" data-t="runDoctor">فحص التوافق والاعتماديات</button>
+            <pre id="doctorOutput" class="terminal larger" aria-live="polite">—</pre>
+          </article>
+          <article class="panel"><div class="panel-title"><div><span class="micro">INTEGRITY GUARD / SHA-256</span><h2 data-t="integrityGuard">التحقق من سلامة الملفات</h2></div><div class="panel-emblem">◇</div></div>
+            <p class="section-desc" data-t="integrityIntro">مطابقة 10 ملفات أساسية ببصماتها المدمجة عند بناء الإصدار. لا يفحص ملفات التطبيقات الأخرى.</p>
+            <button class="primary full" id="runIntegrity" data-t="runIntegrity">تحقق من ملفات AY</button>
+            <pre id="integrityOutput" class="terminal larger" aria-live="polite">—</pre>
+          </article>
+        </div>
+        <article class="panel" style="margin-top:16px"><div class="panel-title"><div><span class="micro">V2 PROFILE BACKUP</span><h2 data-t="profileBackup">النسخ الاحتياطي للإعدادات</h2></div><div class="panel-emblem">▣</div></div>
+          <p class="section-desc" data-t="profileIntro">حفظ واسترجاع إعدادات AY الثلاث فقط داخل مجلد التقارير على الجهاز، بدون نقل بيانات خارجية.</p>
+          <div class="button-row"><button class="btn-outline" id="saveProfile" data-t="saveProfile">نسخ الإعدادات</button><button class="btn-outline" id="restoreProfile" data-t="restoreProfile">استرجاع الإعدادات</button></div>
+          <div class="notice" data-t="v2Limits">V2 هنا منصة إدارة وتحليل مستقلة، وليس محرك Zygote جديدًا ولا أداة لتجاوز حماية التطبيقات.</div>
+        </article>
+      </section>
+      <section class="page" id="page-settings"><article class="panel settings-panel"><div class="panel-title"><div><span class="micro">AY SETTINGS</span><h2 data-t="monitorSettings">إعدادات المراقبة</h2></div><div class="panel-emblem">⚙</div></div><div class="setting"><div><b data-t="monitorToggle">تشغيل مراقبة AY</b><p data-t="monitorExplain">السماح بفحص خفيف عند الإقلاع من أدوات AY فقط</p></div><label class="switch"><input type="checkbox" id="setMonitor" aria-label="Monitor"/><span></span></label></div><div class="setting"><div><b data-t="bootToggle">فحص عند الإقلاع</b><p data-t="bootExplain">كتابة تقرير واحد بعد بدء الجهاز، دون تشغيل خدمة مستمرة</p></div><label class="switch"><input type="checkbox" id="setBoot" aria-label="Boot scan"/><span></span></label></div><div class="setting"><div><b data-t="logToggle">تسجيل أحداث AY</b><p data-t="logExplain">سجل محلي محدود الحجم لأحداث وحدة AY فقط</p></div><label class="switch"><input type="checkbox" id="setLogging" aria-label="Logging"/><span></span></label></div><div class="notice" data-t="restartNote">يتم حفظ الخيارات فورًا. خيارات فحص الإقلاع تسري عند الإقلاع التالي.</div></article></section>
+    </main>
+    <footer><span>⚡ AY ZYGISK</span><span>DESIGNED BY <strong>ENG. AHMED YASIR</strong></span><span>V2 · INDEPENDENT DIAGNOSTICS</span></footer>
+  </div>
+  <div id="toast" role="status"></div>
+  <script src="assets/app.js"></script>
+</body>
+</html>
