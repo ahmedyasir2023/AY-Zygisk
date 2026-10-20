@@ -1,0 +1,29 @@
+name: AY Android NDK ABI compilation
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'native/**'
+      - 'tools/build-android.py'
+      - '.github/workflows/android-ndk.yml'
+jobs:
+  android:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Android SDK + NDK
+        uses: android-actions/setup-android@v3
+      - run: sdkmanager --install "ndk;30.0.16248370"
+      - name: Compile static Android preflight for 4 ABIs
+        run: python3 tools/build-android.py --ndk "$ANDROID_HOME/ndk/30.0.16248370"
+      - name: Package install ZIP
+        run: python3 tools/build.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ay-zygisk-v0.3-ndk-readonly-build
+          path: |
+            bin/*/ay-native
+            ../AY-Zygisk-Runtime-v0.3.0-alpha.zip
+          if-no-files-found: error

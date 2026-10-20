@@ -1,0 +1,23 @@
+name: AY Runtime desktop tests
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure and build native tests
+        run: |
+          cmake -S native -B build/ay-runtime -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/ay-runtime --parallel 4
+      - name: Static ELF preflight integration tests
+        run: python3 native/tests/test_native.py build/ay-runtime/ay-native
+      - name: AY plugin lifecycle / ABI / crash / timeout integration tests
+        run: python3 native/runtime/tests/test_runtime.py build/ay-runtime/ay-runtime-host build/ay-runtime
+      - name: Shell controller tests
+        run: sh tests/test-controller.sh
+      - name: Build and audit ZIP
+        run: |
+          python3 tools/build.py
+          unzip -t ../AY-Zygisk-Runtime-v0.3.0-alpha.zip

@@ -1,0 +1,40 @@
+name: AY Zygisk API Bridge (Android NDK)
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'native/zygisk/**'
+      - 'tools/build-zygisk.py'
+      - 'tools/build.py'
+      - '.github/workflows/zygisk-android-build.yml'
+
+jobs:
+  native-android:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: android-actions/setup-android@v3
+      - name: Install pinned NDK
+        run: sdkmanager --install 'ndk;27.2.12479018'
+      - name: Download unmodified official public Zygisk API header
+        run: |
+          curl -fLsS --retry 3 https://raw.githubusercontent.com/topjohnwu/zygisk-module-sample/master/module/jni/zygisk.hpp -o native/zygisk/vendor/zygisk.hpp
+          grep -F '#define ZYGISK_API_VERSION 5' native/zygisk/vendor/zygisk.hpp
+          sha256sum native/zygisk/vendor/zygisk.hpp
+      - name: Run mock callback contract tests
+        run: python3 native/zygisk/tests/test_bridge.py
+      - name: Build all four Android ABIs
+        run: python3 tools/build-zygisk.py --ndk "$ANDROID_HOME/ndk/27.2.12479018" --abi all
+      - name: Package opt-in development build
+        run: python3 tools/build.py --with-zygisk
+      - name: Verify archive integrity
+        run: |
+          unzip -t ../AY-Zygisk-API-Bridge-v0.4.0-alpha.zip
+          unzip -l ../AY-Zygisk-API-Bridge-v0.4.0-alpha.zip | grep 'zygisk/arm64-v8a.so'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AY-Zygisk-0.4.0-NDK-UNTESTED
+          path: ../AY-Zygisk-API-Bridge-v0.4.0-alpha.zip
+          retention-days: 7
