@@ -11,7 +11,7 @@ parser.add_argument('--with-zygisk',action='store_true',help='OPT-IN: include AL
 args=parser.parse_args()
 entries=['module.prop','customize.sh','action.sh','service.sh','uninstall.sh','skip_mount',
          'integrity.sha256',
-         'README.md','CHANGELOG.md','config/settings.conf','scripts/ayctl.sh',
+         'README.md','CHANGELOG.md','branding/ay-zygisk-banner.svg','config/settings.conf','scripts/ayctl.sh',
          'webroot/index.html','webroot/assets/app.css','webroot/assets/app.js','webroot/assets/mark.svg']
 # Only include real Android NDK builds when explicitly staged in bin/<ABI>.
 for abi in ('arm64-v8a','armeabi-v7a','x86','x86_64','riscv64'):
