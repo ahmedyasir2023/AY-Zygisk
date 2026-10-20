@@ -2,8 +2,10 @@
 """Offline release assertions for the AY Zygisk V3 installer archive."""
 
 import hashlib
+import json
 import sys
 from pathlib import Path
+from xml.etree import ElementTree
 from zipfile import ZipFile
 
 
@@ -24,12 +26,21 @@ def test(original_path: Path, output_path: Path) -> None:
         assert b"'webroot/*'" in output.read("customize.sh")
         assert b"AY Zygisk V3.0.0" in output.read("webroot/index.html")
         assert b"ay-v3.css" in output.read("webroot/index.html")
+        assert b'img class="ay-v3-banner"' in output.read("webroot/index.html")
+        assert b"./assets/ay-v3-banner.png" in output.read("webroot/index.html")
         assert b"Eng. Ahmed Yasir" in output.read("webroot/index.html")
         assert b"--color-onx-accent: #eac16e" in output.read("webroot/assets/ay-v3.css")
         assert b"GNU AFFERO GENERAL PUBLIC LICENSE" in output.read("LICENSE")
         assert b"NeoZygisk" in output.read("NOTICE.md")
         assert b"CSOLoader" in output.read("NOTICE.md")
         assert output.read("banner.png").startswith(b"\x89PNG\r\n\x1a\n")
+        assert output.read("webroot/assets/ay-v3-banner.png") == output.read("banner.png")
+        locales = json.loads(output.read("webroot/locales/languages.json"))
+        assert locales["ar"] == "العربية"
+        english_keys = {node.attrib["name"] for node in ElementTree.fromstring(output.read("webroot/locales/strings/en.xml"))}
+        arabic_keys = {node.attrib["name"] for node in ElementTree.fromstring(output.read("webroot/locales/strings/ar.xml"))}
+        assert english_keys == arabic_keys, "Arabic must translate every English UI label"
+        assert b"status_workdir_private" in output.read("webroot/locales/strings/ar.xml")
         for abi in ("arm64-v8a", "armeabi-v7a", "x86", "x86_64"):
             for name in (f"bin/{abi}/zygiskd", f"lib/{abi}/libzygisk.so", f"lib/{abi}/libzygisk_ptrace.so"):
                 assert output.read(name) == original.read(name), f"Native binary modified: {name}"
@@ -42,6 +53,9 @@ def test(original_path: Path, output_path: Path) -> None:
         for name in names:
             if name.startswith("webroot/assets/") and name.endswith(".js"):
                 assert b"OnyxZygisk" not in output.read(name), name
+                if name.startswith("webroot/assets/index-"):
+                    assert b"children:t?.keys.workdir||c" not in output.read(name)
+                    assert b"Managed internally" in output.read(name)
 
     print(f"PASS AY Zygisk V3 archive: {output_path} ({sha(output_path.read_bytes())})")
 
