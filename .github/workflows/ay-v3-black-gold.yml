@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - feat/ay-zygisk-v3-black-gold
+      - fix/ay-v3-webui-arabic-banner
     paths:
       - 'tools/pack-ay-v3.py'
       - 'tests/test-ay-v3.py'
