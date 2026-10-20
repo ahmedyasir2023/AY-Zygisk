@@ -1,4 +1,12 @@
 # AY Zygisk Native Runtime Lab 0.3.0
+  
+## AY independent-engine core (in progress)
+
+`engine/core.hpp` and `engine/core.cpp` implement an original, portable
+state machine and versioned IPC frame validation. `engine/tests/test_core.cpp`
+tests state transitions, bounded parsing and invalid inputs. The sources
+compile on Linux and with the Android NDK; they are **not** an injector.
+No daemon, socket listener or Zygote attachment is enabled in install ZIPs.
 
 The native tree holds two **different** programs:
 

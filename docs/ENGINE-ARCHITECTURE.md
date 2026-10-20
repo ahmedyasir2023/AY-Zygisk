@@ -33,6 +33,15 @@ bridge. None of these loads code into Android Zygote. The status key
 - **M1:** In progress; GitHub Actions and host tests are the immediate evidence.
 - **M2–M5:** Not complete. Do not publish a standalone-engine release.
 
+### M2 control-plane foundation (source implemented, host-tested)
+
+- `native/engine/core.hpp` and `core.cpp` define the native engine state
+  machine with failure thresholds and explicit disable/reset semantics.
+- The binary IPC envelope is length-bounded, versioned and rejects unknown
+  command types; unit tests exercise malformed headers and 100,000 random frames.
+- No socket is listening, no root privileges are used, and there is no Zygote
+  attachment. Peer authentication and persistent crash tracking remain required.
+
 The bridge in `native/zygisk` is a plugin that requires an external backend.
 It cannot serve as the standalone loader. The host harness uses an AY-specific
 ABI and must not be presented as Zygisk API compatibility.
