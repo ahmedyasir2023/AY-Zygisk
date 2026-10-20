@@ -21,7 +21,7 @@ setting() {
 manager() {
   # APatch may ship Magisk compatibility variables: test it first.
   if [ -d /data/adb/ap ] || [ -d /data/adb/apatch ]; then printf 'APatch'
-  elif [ -d /data/adb/ksu ] || command -v ksud >/dev/null 2>&1; then printf 'KernelSU'
+  elif [ "${KSU:-}" = '1' ] || [ "${KSU:-}" = 'true' ] || [ -d /data/adb/ksu ] || command -v ksud >/dev/null 2>&1; then printf 'KernelSU'
   elif command -v magisk >/dev/null 2>&1 || [ -d /data/adb/magisk ]; then printf 'Magisk'
   else printf 'Undetected'; fi
 }
@@ -74,6 +74,8 @@ status() {
   printf 'STATUS|logging|%s\n' "$(setting AY_LOGGING)"
   printf 'STATUS|bootscan|%s\n' "$(setting AY_BOOT_SCAN)"
   printf 'STATUS|release|2.0.0\n'
+  printf 'STATUS|target_android|14-plus\n'
+  printf 'STATUS|target_root_manager|KernelSU-Next\n'
   printf 'STATUS|native_engine|standalone-not-implemented\n'
   if [ -f "$MODDIR/zygisk/$(device_abi).so" ]; then
     printf 'STATUS|api_bridge|android-plugin-packaged-unverified\n'
@@ -162,8 +164,45 @@ native_scan() {
     done
   fi
 }
+# Android 14+ / KernelSU Next compatibility is a read-only TARGET check.
+# Generic KernelSU environment markers cannot distinguish Next from every fork.
+# Missing KSU_LATE_LOAD is not proof that the device used early-init mode.
+ksun_compat() {
+  printf 'KSUN|target_android|14-plus\n'
+  printf 'KSUN|target_manager|KernelSU-Next\n'
+  sdk=${API:-}
+  [ -n "$sdk" ] || sdk=$(propval ro.build.version.sdk)
+  case "$sdk" in
+    ''|*[!0-9]*) printf 'KSUN|android|unknown\n' ;;
+    *) if [ "$sdk" -ge 34 ]; then printf 'KSUN|android|pass-api-%s\n' "$sdk"
+       else printf 'KSUN|android|unsupported-api-%s\n' "$sdk"; fi ;;
+  esac
+  mgr=$(manager)
+  case "$mgr" in
+    KernelSU) printf 'KSUN|root_family|kernelsu-detected-next-unverified\n' ;;
+    *) printf 'KSUN|root_family|not-detected\n' ;;
+  esac
+  abi=$(device_abi)
+  case "$abi" in
+    arm64-v8a|x86_64) printf 'KSUN|primary_abi|%s\n' "$abi" ;;
+    *) printf 'KSUN|primary_abi|unsupported-or-unknown-%s\n' "$abi" ;;
+  esac
+  if [ "${KSU_LATE_LOAD:-}" = '1' ]; then
+    printf 'KSUN|boot_mode|late-load-not-eligible-for-early-zygote\n'
+  else
+    printf 'KSUN|boot_mode|not-verifiable-from-controller\n'
+  fi
+  if [ -d "$MODDIR/system" ]; then
+    printf 'KSUN|system_mount|metamodule-required\n'
+  else
+    printf 'KSUN|system_mount|not-required\n'
+  fi
+  printf 'KSUN|independent_backend|not-implemented\n'
+  printf 'KSUN|injection|disabled\n'
+}
 runtime_status() {
   printf 'RUNTIME|release|2.0.0\n'
+  printf 'RUNTIME|target_platform|Android-14-plus-KernelSU-Next\n'
   printf 'RUNTIME|device_mode|read-only-readiness\n'
   printf 'RUNTIME|host_lab|isolated-AY-fixtures-source\n'
   printf 'RUNTIME|android_zygote_hook|not-implemented\n'
@@ -229,6 +268,8 @@ report() {
     native_scan
     printf '\nRUNTIME READINESS\n'
     runtime_status
+    printf '\nKERNELSU NEXT TARGET COMPATIBILITY\n'
+    ksun_compat
     printf '\nPUBLIC ZYGISK API BRIDGE\n'
     bridge_status
     printf '\nAY V2 DOCTOR\n'
@@ -300,6 +341,7 @@ verify() {
 # active Zygisk runtime or successful callbacks in device processes.
 doctor() {
   printf 'DOCTOR|version|2.0.0\n'
+  ksun_compat
   printf 'DOCTOR|module_id|ayzygisk\n'
   printf 'DOCTOR|root_manager|%s\n' "$(sanitize "$(manager)")"
   sdk=$(propval ro.build.version.sdk)
@@ -367,11 +409,12 @@ case "${1:-}" in
   native) native_scan ;;
   runtime) runtime_status ;;
   bridge) bridge_status ;;
+  ksun) ksun_compat ;;
   boot-scan) boot_scan ;;
   doctor) doctor ;;
   verify) verify ;;
   backup-settings) backup_settings ;;
   restore-settings) restore_settings ;;
   logs) [ -f "$LOG_DIR/events.log" ] && tail -n 60 "$LOG_DIR/events.log" || printf 'INFO|No events recorded\n' ;;
-  *) printf 'Usage: ayctl.sh {status|scan|native|runtime|bridge|doctor|verify|config|set KEY 0/1|backup-settings|restore-settings|report|logs|boot-scan}\n'; exit 2 ;;
+  *) printf 'Usage: ayctl.sh {status|scan|native|runtime|bridge|ksun|doctor|verify|config|set KEY 0/1|backup-settings|restore-settings|report|logs|boot-scan}\n'; exit 2 ;;
 esac

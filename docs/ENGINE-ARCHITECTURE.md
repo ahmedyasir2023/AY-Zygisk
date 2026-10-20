@@ -56,3 +56,24 @@ For M2, the backend must be implemented and built specifically for Android.
 Android's Zygote may spawn both primary and secondary ABI processes; WebView
 Zygote and USAP behavior also require coverage. Runtime tests on a desktop
 cannot establish compatibility, reliability or system startup safety.
+
+## Selected Android target: Android 14+ with KernelSU Next
+
+- Treat Android SDK 34 as the minimum for the **future independent engine**;
+  the legacy V2 read-only controller can still run on older supported Android.
+- KernelSU Next officially supports primary `arm64-v8a` and `x86_64`
+  architectures. A 64-bit device may still use a separate 32-bit Zygote;
+  both process lifecycles require independent validation.
+- KernelSU's documented `KSU_LATE_LOAD=1` mode skips the normal early boot
+  hooks and is **not eligible for assumptions about pre-Zygote attachment**.
+- This module has `skip_mount` and no system directory. A metamodule is
+  unnecessary for our read-only diagnostics; do not install another one just
+  for AY.
+- `scripts/ayctl.sh ksun` provides read-only compatibility observations.
+  A generic KernelSU family marker does **not** cryptographically prove the
+  KernelSU Next variant or guarantee backend functionality.
+- Physical test requirements: exact device/kernel, SELinux mode, standard vs
+  late-load, boot logs, current Zygisk modules and a known recovery route.
+- Until tested, independent injection remains disabled and unreleased.
+
+Primary reference: [KernelSU Next official metamodule guide](https://github.com/KernelSU-Next/KernelSU-Next/blob/dev/website/docs/guide/metamodule.md)
