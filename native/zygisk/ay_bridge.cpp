@@ -2,6 +2,7 @@
 // Original AY Zygisk API-v5 smoke-test bridge.
 // No hooking, hiding, process-name collection, or system modification.
 // Built only against the upstream official zygisk.hpp header.
+#include <sys/types.h>  // dev_t, ino_t required by the public Zygisk API
 #include "zygisk.hpp"
 
 class AYBridge final : public zygisk::ModuleBase {
