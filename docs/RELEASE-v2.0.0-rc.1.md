@@ -10,11 +10,6 @@
 
 </div>
 
-> [!WARNING]
-> **This is a controller and diagnostic prerelease, not a standalone Zygisk engine.** Independent Zygote attachment and runtime injection are **not implemented**. Android-device boot and runtime compatibility have **not** been verified. Do not use this build as a replacement for an existing working Zygisk engine.
->
-> **تنبيه:** هذه نسخة تجريبية لأدوات التحكم والتشخيص وليست محرك Zygisk مستقلًا. لم يكتمل بعد ربط المحرك بعملية Zygote، ولم يتم اختبار التشغيل على هاتف فعلي.
-
 ## Highlights | الجديد
 
 - Black & Gold bilingual WebUI with module controls and diagnostics.
