@@ -1,0 +1,52 @@
+name: AY Onyx Runtime Integration Preview
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/pack-onyx-runtime.py'
+      - '.github/workflows/onyx-runtime-preview.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Obtain pinned OnyxZygisk v1.09 binary release
+        run: |
+          curl --fail --location --retry 3 --output upstream.zip \
+            https://github.com/OnyxZygisk/OnyxZygisk/releases/download/v1.09/OnyxZygisk-v1.09-399-820b68b-release.zip
+          echo '76fc0ed44186a628d3816a2830320e234ed62e1aa962be99bc1bf224f5505de7  upstream.zip' | sha256sum -c -
+
+      - name: Preserve pinned AGPL-3.0 license and attribution
+        run: |
+          curl --fail --location --retry 3 --output upstream-LICENSE \
+            https://raw.githubusercontent.com/OnyxZygisk/OnyxZygisk/820b68b31527c41d5decf4a47765167ebe795dc8/LICENSE
+          curl --fail --location --retry 3 --output upstream-NOTICE.md \
+            https://raw.githubusercontent.com/OnyxZygisk/OnyxZygisk/820b68b31527c41d5decf4a47765167ebe795dc8/NOTICE.md
+
+      - name: Assemble runtime preview without altering upstream boot scripts
+        run: |
+          python3 tools/pack-onyx-runtime.py \
+            --upstream upstream.zip \
+            --license upstream-LICENSE \
+            --notice upstream-NOTICE.md \
+            --banner branding/ay-zygisk-banner.svg \
+            --output AY-Zygisk-OnyxRuntime-v1.09-ay.1-preview.zip
+
+      - name: Verify installer archive and license
+        run: |
+          unzip -tq AY-Zygisk-OnyxRuntime-v1.09-ay.1-preview.zip
+          unzip -p AY-Zygisk-OnyxRuntime-v1.09-ay.1-preview.zip module.prop
+          unzip -p AY-Zygisk-OnyxRuntime-v1.09-ay.1-preview.zip README-AY.md
+          sha256sum AY-Zygisk-OnyxRuntime-v1.09-ay.1-preview.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ay-zygisk-onyx-runtime-v1.09-preview
+          path: AY-Zygisk-OnyxRuntime-v1.09-ay.1-preview.zip
+          if-no-files-found: error
