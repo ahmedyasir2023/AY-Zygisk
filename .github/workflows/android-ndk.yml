@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup Android SDK + NDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
       - run: sdkmanager --install "ndk;27.2.12479018"
       - name: Compile static Android preflight for 4 ABIs
         run: python3 tools/build-android.py --ndk "$ANDROID_HOME/ndk/30.0.16248370"

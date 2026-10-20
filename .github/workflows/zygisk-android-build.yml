@@ -15,11 +15,12 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
       - name: Install pinned NDK
         run: sdkmanager --install 'ndk;27.2.12479018'
       - name: Download unmodified official public Zygisk API header
         run: |
+          mkdir -p native/zygisk/vendor
           curl -fLsS --retry 3 https://raw.githubusercontent.com/topjohnwu/zygisk-module-sample/master/module/jni/zygisk.hpp -o native/zygisk/vendor/zygisk.hpp
           grep -F '#define ZYGISK_API_VERSION 5' native/zygisk/vendor/zygisk.hpp
           sha256sum native/zygisk/vendor/zygisk.hpp
