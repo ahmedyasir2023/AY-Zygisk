@@ -1,0 +1,68 @@
+name: Publish AY Zygisk V3.0.0 pre-release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/ay-zygisk-v3-black-gold
+    paths:
+      - '.github/workflows/publish-ay-v3.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: github.repository == 'ahmedyasir2023/AY-Zygisk'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check official runtime archive and pinned checksum
+        run: |
+          curl --fail --location --retry 3 --output upstream.zip \
+            https://github.com/OnyxZygisk/OnyxZygisk/releases/download/v1.09/OnyxZygisk-v1.09-399-820b68b-release.zip
+          echo '76fc0ed44186a628d3816a2830320e234ed62e1aa962be99bc1bf224f5505de7  upstream.zip' | sha256sum -c -
+
+      - name: Fetch complete legal notices
+        run: |
+          curl --fail --location --retry 3 --output upstream-LICENSE \
+            https://raw.githubusercontent.com/OnyxZygisk/OnyxZygisk/820b68b31527c41d5decf4a47765167ebe795dc8/LICENSE
+          curl --fail --location --retry 3 --output upstream-NOTICE.md \
+            https://raw.githubusercontent.com/OnyxZygisk/OnyxZygisk/820b68b31527c41d5decf4a47765167ebe795dc8/NOTICE.md
+
+      - name: Render V3 banner
+        run: |
+          python3 -m pip install --user 'CairoSVG==2.7.1'
+          python3 -c "import cairosvg; cairosvg.svg2png(url='branding/ay-zygisk-banner.svg', write_to='AY-Zygisk-V3-Banner.png', output_width=1400)"
+
+      - name: Create verified installable ZIP
+        run: |
+          python3 tools/pack-ay-v3.py \
+            --upstream upstream.zip \
+            --license upstream-LICENSE \
+            --notice upstream-NOTICE.md \
+            --banner-png AY-Zygisk-V3-Banner.png \
+            --skin-css webroot/assets/ay-v3.css \
+            --output AY-Zygisk-V3.0.0-BlackGold.zip
+          python3 tests/test-ay-v3.py upstream.zip AY-Zygisk-V3.0.0-BlackGold.zip
+          unzip -tq AY-Zygisk-V3.0.0-BlackGold.zip
+          sha256sum AY-Zygisk-V3.0.0-BlackGold.zip > SHA256SUMS.txt
+
+      - name: Publish GitHub pre-release once
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v3.0.0 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "v3.0.0 already exists; leaving existing release untouched."
+            exit 0
+          fi
+          gh release create v3.0.0 \
+            AY-Zygisk-V3.0.0-BlackGold.zip \
+            AY-Zygisk-V3-Banner.png \
+            SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title 'AY Zygisk V3.0.0 — Black & Gold Edition' \
+            --notes-file docs/RELEASE-V3.0.0.md \
+            --prerelease
