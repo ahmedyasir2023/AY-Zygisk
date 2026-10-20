@@ -7,6 +7,9 @@ target_include_directories(ay-engine-core PUBLIC engine)
 target_compile_options(ay-engine-core PRIVATE -Wall -Wextra -Wpedantic -Wconversion -fstack-protector-strong)
 
 add_executable(ay-native src/main.cpp)
+add_executable(ay-engine-inventory engine/inventory.cpp engine/inventory_main.cpp)
+target_include_directories(ay-engine-inventory PRIVATE engine)
+target_compile_options(ay-engine-inventory PRIVATE -Wall -Wextra -Wpedantic -Wconversion -fstack-protector-strong)
 target_compile_options(ay-native PRIVATE -Wall -Wextra -Wpedantic -Wconversion -fstack-protector-strong)
 if(ANDROID)
   # ONLY the safe read-only inspector is built on Android.

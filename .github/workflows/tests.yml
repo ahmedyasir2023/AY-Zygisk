@@ -14,6 +14,8 @@ jobs:
           ctest --test-dir build/ay-runtime --output-on-failure
       - name: Static ELF preflight integration tests
         run: python3 native/tests/test_native.py build/ay-runtime/ay-native
+      - name: Native module candidate security tests
+        run: python3 native/engine/tests/test_inventory.py build/ay-runtime/ay-engine-inventory
       - name: AY plugin lifecycle / ABI / crash / timeout integration tests
         run: python3 native/runtime/tests/test_runtime.py build/ay-runtime/ay-runtime-host build/ay-runtime
       - name: Shell controller tests

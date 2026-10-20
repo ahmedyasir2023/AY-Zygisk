@@ -39,6 +39,8 @@ bridge. None of these loads code into Android Zygote. The status key
   machine with failure thresholds and explicit disable/reset semantics.
 - The binary IPC envelope is length-bounded, versioned and rejects unknown
   command types; unit tests exercise malformed headers and 100,000 random frames.
+- A read-only, descriptor-relative inventory scanner rejects symlinks, disabled
+  modules, unexpected ELF classes and ABI mismatches; it never executes a module.
 - No socket is listening, no root privileges are used, and there is no Zygote
   attachment. Peer authentication and persistent crash tracking remain required.
 
